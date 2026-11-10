@@ -1,4 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- O conector do Google ainda é marcado como experimental no Semantic Kernel. -->
+    <NoWarn>$(NoWarn);SKEXP0070</NoWarn>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\AgenteSuporte.Application\AgenteSuporte.Application.csproj" />
   </ItemGroup>
@@ -11,5 +15,7 @@
     <!-- 1.* = última versão estável da linha 1.x. Fixe uma versão exata depois do primeiro restore. -->
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.*" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.*" />
+    <!-- Pacote em versão prévia (alpha): "1.*-*" aceita pré-releases. -->
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.*-*" />
   </ItemGroup>
 </Project>

@@ -4,6 +4,7 @@ using AgenteSuporte.Domain.Comum;
 using AgenteSuporte.Domain.Tickets;
 using AgenteSuporte.Infrastructure.Conhecimento;
 using AgenteSuporte.Infrastructure.IA;
+using AgenteSuporte.Infrastructure.IA.Configuracao;
 using AgenteSuporte.Infrastructure.IA.Filtros;
 using AgenteSuporte.Infrastructure.IA.Historico;
 using AgenteSuporte.Infrastructure.IA.Plugins;
@@ -12,6 +13,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using OpenAI;
+using System.ClientModel;
 
 namespace AgenteSuporte.Infrastructure;
 
@@ -58,10 +61,31 @@ public static class DependencyInjection
                     throw new InvalidOperationException("Configure IA:Endpoint para Azure OpenAI.");
                 kernelBuilder.AddAzureOpenAIChatCompletion(
                     deploymentName: opcoes.Modelo, endpoint: opcoes.Endpoint, apiKey: opcoes.ApiKey);
+                services.AddSingleton<IFabricaConfiguracaoExecucao, FabricaConfiguracaoOpenAI>();
                 break;
 
             case "OpenAI":
                 kernelBuilder.AddOpenAIChatCompletion(modelId: opcoes.Modelo, apiKey: opcoes.ApiKey);
+                services.AddSingleton<IFabricaConfiguracaoExecucao, FabricaConfiguracaoOpenAI>();
+                break;
+
+            // Qualquer provedor que exponha a API no formato da OpenAI: Gemini, Ollama, GitHub Models, Groq...
+            case "OpenAICompativel":
+                if (string.IsNullOrWhiteSpace(opcoes.Endpoint))
+                    throw new InvalidOperationException("Configure IA:Endpoint para o provedor compatível com OpenAI.");
+
+                var cliente = new OpenAIClient(
+                    new ApiKeyCredential(opcoes.ApiKey),
+                    new OpenAIClientOptions { Endpoint = new Uri(opcoes.Endpoint) });
+
+                kernelBuilder.AddOpenAIChatCompletion(modelId: opcoes.Modelo, openAIClient: cliente);
+                services.AddSingleton<IFabricaConfiguracaoExecucao, FabricaConfiguracaoOpenAI>();
+                break;
+
+            // Conector nativo do Gemini (API generateContent). Funciona com as chaves novas "AQ." do AI Studio.
+            case "GoogleGemini":
+                kernelBuilder.AddGoogleAIGeminiChatCompletion(modelId: opcoes.Modelo, apiKey: opcoes.ApiKey);
+                services.AddSingleton<IFabricaConfiguracaoExecucao, FabricaConfiguracaoGemini>();
                 break;
 
             default:

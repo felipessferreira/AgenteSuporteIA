@@ -1,9 +1,9 @@
 using AgenteSuporte.Application.Agente;
+using AgenteSuporte.Infrastructure.IA.Configuracao;
 using AgenteSuporte.Infrastructure.IA.Historico;
 using AgenteSuporte.Infrastructure.IA.Plugins;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace AgenteSuporte.Infrastructure.IA;
 
@@ -18,12 +18,14 @@ internal sealed class AgenteSuporteSemanticKernel : IAgenteSuporte
     private readonly Kernel _kernel;
     private readonly IChatCompletionService _chat;
     private readonly IHistoricoConversas _historicos;
+    private readonly IFabricaConfiguracaoExecucao _fabricaConfiguracao;
 
     public AgenteSuporteSemanticKernel(
         Kernel kernel,
         TicketsPlugin ticketsPlugin,
         DocumentacaoPlugin documentacaoPlugin,
-        IHistoricoConversas historicos)
+        IHistoricoConversas historicos,
+        IFabricaConfiguracaoExecucao fabricaConfiguracao)
     {
         // O Kernel registrado com AddKernel() é Transient: cada agente recebe uma instância própria,
         // então é seguro adicionar plugins aqui (eles dependem de serviços Scoped, como o DbContext).
@@ -33,6 +35,7 @@ internal sealed class AgenteSuporteSemanticKernel : IAgenteSuporte
 
         _chat = _kernel.GetRequiredService<IChatCompletionService>();
         _historicos = historicos;
+        _fabricaConfiguracao = fabricaConfiguracao;
     }
 
     public async Task<RespostaAgente> ConversarAsync(string sessaoId, string mensagem, CancellationToken ct = default)
@@ -50,14 +53,8 @@ internal sealed class AgenteSuporteSemanticKernel : IAgenteSuporte
         {
             sessao.Historico.AddUserMessage(mensagem);
 
-            var configuracao = new OpenAIPromptExecutionSettings
-            {
-                // Auto = o modelo decide quais ferramentas chamar, e o SK executa e devolve o resultado ao modelo
-                // em loop até ele produzir a resposta final.
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-                Temperature = 0.2,
-                MaxTokens = 800
-            };
+            // A configuração vem da fábrica do provedor ativo (OpenAI ou Gemini).
+            var configuracao = _fabricaConfiguracao.Criar();
 
             var resposta = await _chat.GetChatMessageContentAsync(sessao.Historico, configuracao, _kernel, ct);
 

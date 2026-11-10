@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <UserSecretsId>agente-suporte-sk-demo</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AgenteSuporte.Application\AgenteSuporte.Application.csproj" />
+    <ProjectReference Include="..\AgenteSuporte.Infrastructure\AgenteSuporte.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Conhecimento\**\*.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\AgenteSuporte.Domain\AgenteSuporte.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Apenas abstrações de DI. A Application continua sem saber o que é Semantic Kernel ou EF. -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.*" />
+  </ItemGroup>
+</Project>

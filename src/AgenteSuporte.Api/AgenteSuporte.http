@@ -1,0 +1,23 @@
+@baseUrl = http://localhost:5000
+@sessao = sessao-felipe-01
+
+### 1) Pergunta respondida via RAG (o agente deve chamar buscar_documentacao)
+POST {{baseUrl}}/api/agente/conversas/{{sessao}}/mensagens
+Content-Type: application/json
+
+{ "mensagem": "Qual o padrão de nome de branch para uma correção na sprint 42?" }
+
+### 2) Pedido de ticket (o agente deve propor os dados e pedir confirmação)
+POST {{baseUrl}}/api/agente/conversas/{{sessao}}/mensagens
+Content-Type: application/json
+
+{ "mensagem": "O deploy em homologação está falhando com timeout na migration desde ontem. Quero abrir um ticket." }
+
+### 3) Confirmação (agora sim ele chama abrir_ticket)
+POST {{baseUrl}}/api/agente/conversas/{{sessao}}/mensagens
+Content-Type: application/json
+
+{ "mensagem": "Sim, pode abrir." }
+
+### 4) Conferindo pela API REST, sem IA
+GET {{baseUrl}}/api/tickets

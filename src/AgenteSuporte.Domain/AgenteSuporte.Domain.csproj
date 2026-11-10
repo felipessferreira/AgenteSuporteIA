@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- O domínio não depende de NENHUM pacote externo: nem EF, nem Semantic Kernel. -->
+</Project>

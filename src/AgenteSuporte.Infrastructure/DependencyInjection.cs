@@ -33,7 +33,7 @@ public static class DependencyInjection
         var connectionString = configuracao.GetConnectionString("SqlServer")
             ?? throw new InvalidOperationException("ConnectionStrings:SqlServer não configurada.");
 
-        services.AddDbContext<AppDbContext>(o => o.UseSqlServer(connectionString));
+        services.AddDbContext<AppDbContext>(o => o.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure()));
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
         services.AddScoped<ITicketRepository, TicketRepository>();
     }
@@ -82,7 +82,10 @@ public static class DependencyInjection
                 services.AddSingleton<IFabricaConfiguracaoExecucao, FabricaConfiguracaoOpenAI>();
                 break;
 
-            // Conector nativo do Gemini (API generateContent). Funciona com as chaves novas "AQ." do AI Studio.
+            // Conector nativo do Gemini (API generateContent), ainda alpha no SK. ATENÇÃO: ele envia o resultado
+            // das ferramentas com role "function", que os modelos atuais (ex.: gemini-3.5-flash) rejeitam com 400.
+            // Para Gemini com ferramentas, prefira "OpenAICompativel" com
+            // Endpoint = https://generativelanguage.googleapis.com/v1beta/openai/
             case "GoogleGemini":
                 kernelBuilder.AddGoogleAIGeminiChatCompletion(modelId: opcoes.Modelo, apiKey: opcoes.ApiKey);
                 services.AddSingleton<IFabricaConfiguracaoExecucao, FabricaConfiguracaoGemini>();

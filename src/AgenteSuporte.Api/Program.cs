@@ -20,7 +20,24 @@ if (app.Environment.IsDevelopment())
 {
     // Atalho para estudo. Em um projeto real, use migrations (dotnet ef migrations add ...).
     using var scope = app.Services.CreateScope();
-    await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureCreatedAsync();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // O LocalDB desliga sozinho após alguns minutos ocioso. Se a API sobe bem nesse momento, a primeira
+    // conexão falha ("error: 50 - SQL Server process failed to start"); alguns segundos depois funciona.
+    const int tentativas = 5;
+    for (var tentativa = 1; ; tentativa++)
+    {
+        try
+        {
+            await db.Database.EnsureCreatedAsync();
+            break;
+        }
+        catch (Exception ex) when (tentativa < tentativas)
+        {
+            app.Logger.LogWarning("Banco indisponível (tentativa {Tentativa}/{Total}): {Erro}", tentativa, tentativas, ex.Message);
+            await Task.Delay(TimeSpan.FromSeconds(3 * tentativa));
+        }
+    }
 }
 
 // ---- Agente ----

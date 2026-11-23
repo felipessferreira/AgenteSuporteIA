@@ -104,3 +104,14 @@ As dependências apontam **sempre para dentro**: Api → Infrastructure → Appl
 4. **OpenTelemetry** com tokens, custo e latência por conversa.
 5. **Multiagente**: um agente triador que encaminha para agentes especialistas (deploy, banco, Git).
 6. Front-end em **React** com streaming (`GetStreamingChatMessageContentsAsync` + SSE).
+
+## Interface web (React)
+
+Fica em `frontend/` (Vite + React + TypeScript). Em desenvolvimento, o Vite repassa `/api` para a API em `http://localhost:5000`, então não é preciso configurar CORS.
+
+```powershell
+dotnet run --project src/AgenteSuporte.Api --launch-profile http
+cd frontend; npm install; npm run dev
+```
+
+Abra http://localhost:5173. Enter envia a pergunta; Shift+Enter quebra a linha. Cada aba do navegador é uma conversa (sessão) própria.

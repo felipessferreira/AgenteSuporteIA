@@ -5,7 +5,7 @@ public sealed class OpcoesIA
     public const string Secao = "IA";
 
     /// <summary>"AzureOpenAI", "OpenAI" ou "OpenAICompativel" (Gemini, Ollama, GitHub Models...).</summary>
-    public string Provedor { get; set; } = "AzureOpenAI";
+    public string Provedor { get; set; } = "OpenAICompativel";
 
     /// <summary>Nome do deployment (Azure) ou do modelo (OpenAI), ex.: gpt-4o-mini.</summary>
     public string Modelo { get; set; } = string.Empty;

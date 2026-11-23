@@ -1,3 +1,4 @@
+using AgenteSuporte.Application.Agente;
 using AgenteSuporte.Domain.Comum;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +16,14 @@ internal sealed class TratadorDeExcecoes(ILogger<TratadorDeExcecoes> logger) : I
         {
             DomainException => (StatusCodes.Status400BadRequest, "Regra de negócio violada"),
             ArgumentException => (StatusCodes.Status400BadRequest, "Requisição inválida"),
+            BadHttpRequestException e => (e.StatusCode, "Requisição inválida"),
+            FalhaProvedorIAException => (StatusCodes.Status502BadGateway, "Falha no provedor de IA"),
             _ => (StatusCodes.Status500InternalServerError, "Erro interno")
         };
 
-        if (status == StatusCodes.Status500InternalServerError)
+        if (exception is FalhaProvedorIAException { DetalhesTecnicos: { Length: > 0 } detalhes })
+            logger.LogError(exception, "Falha no provedor de IA. Resposta do provedor: {Detalhes}", detalhes);
+        else if (status >= StatusCodes.Status500InternalServerError)
             logger.LogError(exception, "Erro não tratado");
 
         httpContext.Response.StatusCode = status;
